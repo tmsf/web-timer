@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Countdown Timer</title>
+</head>
+
+<body>
+  <h1>  Countdown Timer
+  </h1>
+  <div>
+    <label for="repeatSetCountInput">series repeats (times):</label>
+    <input type="number" id="repeatSetCountInput" value="3">
+    <br>
+    <label for="exerciseCountInput">number of exercises in the series:</label>
+    <input type="number" id="exerciseCountInput" value="5">
+    <br>
+  </div>
+  <hr>
+  <div>
+    <label for="longLengthInput">Long Duration (seconds):</label>
+    <input type="number" id="longLengthInput" value="40">
+    <br>
+    <label for="shortLengthInput">Short Duration (seconds):</label>
+    <input type="number" id="shortLengthInput" value="20">
+    <br>
+    <label for="restLengthInput">Rest Duration (seconds):</label>
+    <input type="number" id="restLengthInput" value="60">
+    <br>
+  </div>
+  <hr>
+
+  <h1 id="countdown"></h1>
+
+  <button onclick="startWorkout()">Start Workout</button>
+
+  <script>
+    // Function to start the countdown
+    function startCountdown(duration, type, exerciseNumber, set) {
+      // console.log("countdown", duration, type)
+      const countdownElement = document.getElementById('countdown');
+      const endTime = Date.now() + duration * 1000; // Calculate the end time
+
+      const fileName = 'windows-xp-logon.wav'
+      const audio = new Audio(fileName); // Replace with the actual path to your .wav <fieldset>
+
+      const interval = setInterval(() => {
+        const remainingTime = endTime - Date.now();
+        if (remainingTime <= 0) {
+          clearInterval(interval);
+          countdownElement.textContent = 'DONE!'; // Reset to zero when done
+          // alert(`${type} time's up!`);
+          audio.play()
+        } else {
+          const minutes = Math.floor((remainingTime / 1000) / 60);
+          const seconds = Math.floor((remainingTime / 1000) % 60);
+          countdownElement.textContent =
+            `set: ${set}, exercise: ${exerciseNumber} - ${type} - ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+      }, 1000); // Update every 1000ms (1 second)
+    }
+
+
+    function createWorkout () {
+      const long = parseInt(document.getElementById('longLengthInput').value, 10);
+      const short = parseInt(document.getElementById('shortLengthInput').value, 10);
+      const rest = parseInt(document.getElementById('restLengthInput').value, 10);
+      const exerciseCount = parseInt(document.getElementById('exerciseCountInput').value, 10);
+      const repeatSetCount = parseInt(document.getElementById('repeatSetCountInput').value, 10);
+
+      // exercise is long (you exercise) + short (rest)
+
+      function createExercise (index)  {
+        const exerciseNumber = index +1
+        const exercise = [{ type: "long", duration: long, number: exerciseNumber }, { type: "short", duration: short, number: exerciseNumber }];  
+        return exercise
+      }
+
+      // sum of all exercises + long pause
+      let exerciseSet = Array.from({ length: exerciseCount }, (_, index) => {
+        return createExercise(index)
+      })
+      exerciseSet.push({ type: "rest", duration: rest, number: "rest" })
+
+      // workout =  repeatSetCount * (exerciseCount*([long + short]) + rest ]
+      const workout = Array.from({ length: repeatSetCount }, (_, index) => {
+        return exerciseSet.flat().map((item) => {
+          return {...item, set: (index +1) }
+        })
+      }).flat()
+      console.log("workout ", workout)
+      return workout
+    }
+
+    // const long = 40
+    // const short = 20
+    // const rest = 60
+    // const repetitions = 4
+    // const periods = 3
+
+    // const period = [{ type: "long", duration: long }, { type: "short", duration: short }];
+
+    // let workoutPeriod = Array.from({ length: repetitions }, (_, index) => {
+    //   return period
+    // })
+    // workoutPeriod.push({ type: "rest", duration: rest })
+
+
+    // // periods * (#workout routine * ( [long + short] * #exercises ) + rest ]
+    // const workout = Array.from({ length: periods }, () => {
+    //   return workoutPeriod.flat()
+    // }).flat()
+    // console.log("workout", workout)
+
+    // function startWorkout__(wo) {
+    //   let totalDelay = 0
+    //   wo.forEach((period) => {
+
+    //     setInterval(() =>
+    //       startCountdown(period.duration, period.type)
+    //       , totalDelay)
+    //     totalDelay += period.duration * 1000
+    //     console.log("done ", period.duration, period.type)
+    //   })
+    // }
+
+    function startWorkout() {
+      const wo = createWorkout()
+      let index = 0;
+
+      function runNextTimer() {
+        if (index < wo.length) {
+          const period = wo[index];
+          startCountdown(period.duration, period.type, period.number, period.set);
+
+          // Schedule the next timer after the current one finishes
+          setTimeout(() => {
+            index++;
+            runNextTimer();
+          }, period.duration * 1000);
+        }
+      }
+
+      // Start the first timer
+      runNextTimer();
+    }
+
+    //   function 
+  </script>
+
+</body>
+
+</html>
